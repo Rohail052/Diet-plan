@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Workout & Diet Tracker</title>
+<style>
+  /* Reset & base styles */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background: #f4f7f9;
+    color: #333;
+    line-height: 1.5;
+    padding: 10px;
+  }
+
+  h1, h2 {
+    text-align: center;
+    color: #2c3e50;
+  }
+
+  main {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  }
+
+  nav {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    gap: 20px;
+  }
+
+  nav button {
+    background: #2980b9;
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  nav button:hover, nav button.active {
+    background-color: #1b4f72;
+  }
+
+  pre {
+    background: #e8f0fe;
+    padding: 15px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+  }
+
+  /* Form styles */
+  form {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  select, input[type=number] {
+    flex: 1 1 120px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+
+  button[type="submit"] {
+    background-color: #2980b9;
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    flex: 1 1 100px;
+    transition: background-color 0.3s ease;
+  }
+
+  button[type="submit"]:hover {
+    background-color: #1b4f72;
+  }
+
+  ul#exerciseList {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 15px;
+  }
+
+  ul#exerciseList li {
+    background: #d0e6ff;
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  ul#exerciseList li button.delete-btn {
+    background: #e74c3c;
+    border: none;
+    color: white;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    line-height: 25px;
+    cursor: pointer;
+  }
+
+  ul#exerciseList li button.delete-btn:hover {
+    background: #c0392b;
+  }
+
+  /* Notes textareas */
+  textarea {
+    width: 100%;
+    min-height: 70px;
+    margin-top: 12px;
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    resize: vertical;
+  }
+
+  /* Responsive for small screens */
+  @media (max-width: 480px) {
+    form {
+      flex-direction: column;
+    }
+    select, input[type=number], button[type="submit"] {
+      flex: 1 1 100%;
+    }
+  }
+</style>
+</head>
+<body>
+
+<main>
+  <h1>Workout & Diet Tracker</h1>
+  
+  <nav>
+    <button id="workoutNav">Workout Plan</button>
+    <button id="dietNav" class="active">Diet Plan</button>
+  </nav>
+  
+  <!-- Workout Section -->
+  <section id="workoutSection" style="display:none;">
+    <h2>Workout Plan</h2>
+    <pre id="workoutText"></pre>
+    <label for="workoutNotes"><strong>Your Workout Notes:</strong></label>
+    <textarea id="workoutNotes" placeholder="Write your notes here..."></textarea>
+
+    <h3>Add Custom Exercise</h3>
+    <form id="exerciseForm">
+      <select id="exerciseSelect" required>
+        <option value="" disabled selected>Select exercise</option>
+        <option value="Squats">Squats</option>
+        <option value="Push-ups">Push-ups</option>
+        <option value="Dumbbell Rows">Dumbbell Rows</option>
+        <option value="Plank">Plank</option>
+        <option value="Shoulder Press">Shoulder Press</option>
+        <option value="Bicep Curls">Bicep Curls</option>
+        <option value="Tricep Dips">Tricep Dips</option>
+        <option value="Lunges">Lunges</option>
+        <option value="Calf Raises">Calf Raises</option>
+        <option value="Crunches">Crunches</option>
+      </select>
+      <input id="setsInput" type="number" min="1" placeholder="Sets" required />
+      <input id="repsInput" type="number" min="1" placeholder="Reps" required />
+      <button type="submit">Add</button>
+    </form>
+    <ul id="exerciseList"></ul>
+    
+    <h3>Tips</h3>
+    <pre id="tipsText"></pre>
+    <label for="tipsNotes"><strong>Your Tips Notes:</strong></label>
+    <textarea id="tipsNotes" placeholder="Write your tips here..."></textarea>
+  </section>
+
+  <!-- Diet Section -->
+  <section id="dietSection">
+    <h2>Diet Plan (For Weight Gain)</h2>
+    <pre id="dietText"></pre>
+    <label for="dietNotes"><strong>Your Diet Notes:</strong></label>
+    <textarea id="dietNotes" placeholder="Write your notes here..."></textarea>
+  </section>
+</main>
+
+<script>
+  const workoutPlan = `
+Day 1 - Full Body
+- Squats: 3x10
+- Push-ups: 3x10
+- Dumbbell Rows: 3x10
+- Plank: 3x20s
+
+Day 3 - Upper Body
+- Shoulder Press: 3x10
+- Bicep Curls: 3x12
+- Tricep Dips: 3x10
+- Plank: 3x30s
+
+Day 5 - Lower Body
+- Squats: 3x15
+- Lunges: 3x10/leg
+- Calf Raises: 3x20
+- Crunches: 3x15
+
+Day 6 - Cardio
+- Jog/Walk: 20–30 min
+- Full-body stretch
+`;
+
+  const dietPlan = `
+Breakfast:
+- 3 Eggs omelette or boiled eggs
+- 2 Parathas with butter or ghee
+- Glass of full-fat milk or lassi
+- Handful of nuts (almonds, walnuts)
+
+Mid-Morning Snack:
+- Banana or seasonal fruit
+- Yogurt or a protein shake
+
+Lunch:
+- 1 cup cooked rice or 2 chapatis
+- Chicken, beef, or lentils (dal)
+- Mixed vegetable curry
+- Salad with olive oil dressing
+
+Afternoon Snack:
+- Peanut butter sandwich or trail mix
+- Fresh fruit juice or milkshake
+
+Dinner:
+- Grilled fish or paneer (cottage cheese)
+- 2 chapatis or a bowl of pulao
+- Steamed vegetables
+- A glass of warm milk before bed
+
+Hydration:
+- Drink at least 8-10 glasses of water daily
+- Include herbal teas or fresh lime water
+`;
+
+  const tipsText = `
+- Be consistent with your workouts and diet.
+- Increase calories gradually and focus on nutrient-dense foods.
+- Drink plenty of water.
+- Get enough sleep for muscle recovery.
+- Track your progress and adjust plans as needed.
+`;
+
+  const workoutTextEl = document.getElementById('workoutText');
+  const dietTextEl = document.getElementById('dietText');
+  const tipsTextEl = document.getElementById('tipsText');
+  const workoutNotesEl = document.getElementById('workoutNotes');
+  const dietNotesEl = document.getElementById('dietNotes');
+  const tipsNotesEl = document.getElementById('tipsNotes');
+  const exerciseForm = document.getElementById('exerciseForm');
+  const exerciseSelect = document.getElementById('exerciseSelect');
+  const setsInput = document.getElementById('setsInput');
+  const repsInput = document.getElementById('repsInput');
+  const exerciseList = document.getElementById('exerciseList');
+  const workoutSection = document.getElementById('workoutSection');
+  const dietSection = document.getElementById('dietSection');
+  const workoutNav = document.getElementById('workoutNav');
+  const dietNav = document.getElementById('dietNav');
+
+  workoutTextEl.textContent = workoutPlan;
+  dietTextEl.textContent = dietPlan;
+  tipsTextEl.textContent = tipsText;
+
+  workoutNav.addEventListener('click', () => {
+    workoutSection.style.display = 'block';
+    dietSection.style.display = 'none';
+    workoutNav.classList.add('active');
+    dietNav.classList.remove('active');
+  });
+
+  dietNav.addEventListener('click', () => {
+    workoutSection.style.display = 'none';
+    dietSection.style.display = 'block';
+    dietNav.classList.add('active');
+    workoutNav.classList.remove('active');
+  });
+
+  function loadFromStorage() {
+    workoutNotesEl.value = localStorage.getItem('workoutNotes') || '';
+    dietNotesEl.value = localStorage.getItem('dietNotes') || '';
+    tipsNotesEl.value = localStorage.getItem('tipsNotes') || '';
+    const savedExercises = JSON.parse(localStorage.getItem('exercises')) || [];
+    exerciseList.innerHTML = '';
+    savedExercises.forEach(({exercise, sets, reps}) => {
+      addExerciseToList(exercise, sets, reps);
+    });
+  }
+  loadFromStorage();
+
+  workoutNotesEl.addEventListener('input', () => {
+    localStorage.setItem('workoutNotes', workoutNotesEl.value);
+  });
+  dietNotesEl.addEventListener('input', () => {
+    localStorage.setItem('dietNotes', dietNotesEl.value);
+  });
+  tipsNotesEl.addEventListener('input', () => {
+    localStorage.setItem('tipsNotes', tipsNotesEl.value);
+  });
+
+  function addExerciseToList(exercise, sets, reps) {
+    const li = document.createElement('li');
+    li.textContent = `${exercise} - Sets: ${sets}, Reps: ${reps}`;
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '×';
+    deleteBtn.classList.add('delete-btn');
+    deleteBtn.addEventListener('click', () => {
+      li.remove();
+      saveExercisesToStorage();
+    });
+    li.appendChild(deleteBtn);
+    exerciseList.appendChild(li);
+  }
+
+  function saveExercisesToStorage() {
+    const exercises = [];
+    exerciseList.querySelectorAll('li').forEach(li => {
+      const text = li.firstChild.textContent.trim();
+      const [exercisePart, setsPart, repsPart] = text.split(/[-,]/).map(s => s.trim());
+      const exercise = exercisePart;
+      const sets = setsPart.replace('Sets: ', '');
+      const reps = repsPart.replace('Reps: ', '');
+      exercises.push({exercise, sets, reps});
+    });
+    localStorage.setItem('exercises', JSON.stringify(exercises));
+  }
+
+  exerciseForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const exercise = exerciseSelect.value;
+    const sets = setsInput.value;
+    const reps = repsInput.value;
+    if (!exercise || !sets || !reps) {
+      alert('Please fill all fields to add exercise.');
+      return;
+    }
+    addExerciseToList(exercise, sets, reps);
+    saveExercisesToStorage();
+    exerciseForm.reset();
+  });
+</script>
+
+</body>
+</html>
